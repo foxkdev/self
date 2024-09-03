@@ -3,11 +3,11 @@
   import HighlightedButton from '$lib/components/buttons/HighlightedButton.svelte';
 </script>
 
-<div class="min-h-screen w-full bg-gray-700">
+<div class="min-h-screen w-full">
   <div class="mb-6">
     <HighlightedButton text={'New Service'} route={'/new'} />
   </div>
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+  <div class="flex flex-wrap gap-2 w-full">
     <ProjectCard 
       projectName="My Awesome Project1"
       domain="myawesomeproject1.com"
@@ -17,6 +17,24 @@
 
     <ProjectCard 
       projectName="My Awesome Project2"
+      domain="myawesomeproject2.com"
+      status="Live"
+      creationDate="2024-09-02" 
+    />
+    <ProjectCard 
+      projectName="My Awesome Project3"
+      domain="myawesomeproject2.com"
+      status="Live"
+      creationDate="2024-09-02" 
+    />
+    <ProjectCard 
+      projectName="My Awesome Project4"
+      domain="myawesomeproject2.com"
+      status="Live"
+      creationDate="2024-09-02" 
+    />
+    <ProjectCard 
+      projectName="My Awesome Project5"
       domain="myawesomeproject2.com"
       status="Live"
       creationDate="2024-09-02" 
