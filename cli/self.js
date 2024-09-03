@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import simpleGit from 'simple-git';
-import { exec } from 'child_process';
+import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
@@ -38,9 +38,26 @@ program
       console.log('Repositorio clonado en ' + pathTmp);
 
       // lanzar comando nixpacks
-      const execAsync = promisify(exec);
-      const { stdout, stderr } = await execAsync(`nixpacks build ${pathTmp} --name ${name}`);
-      console.log(stdout);
+      // const execAsync = promisify(exec);
+      // const { stdout, stderr } = await execAsync(`nixpacks build ${pathTmp} --name ${name}`);
+      // console.log(stdout);
+
+      const proceso = spawn('nixpacks', ['build', pathTmp, '--name', name]);
+
+      // Maneja la salida del comando (stdout)
+      proceso.stdout.on('data', (data) => {
+        console.log(`stdout: ${data}`);
+      });
+
+      // Maneja los errores del comando (stderr)
+      proceso.stderr.on('data', (data) => {
+        console.error(`stderr: ${data}`);
+      });
+
+      // Detecta cuando el proceso ha terminado
+      proceso.on('close', (code) => {
+        console.log(`El proceso terminó con el código: ${code}`);
+      });
     } catch (err) {
       console.error('Error al inicializar el repositorio', err);
     }
