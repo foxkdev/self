@@ -7,11 +7,11 @@ export class DockerManager {
   constructor() {
     this.process = new ProcessManager();
   }
-  async buildNixpacks(name: string, path: string) {
+  async buildNixpacks(name: string, path: string, tag: string) {
     // spawn('nixpacks', ['build', path, '--name', name]);
-    await this.process.execute('nixpacks', ['build', path, '--name', name]);
+    await this.process.execute('nixpacks', ['build', path, '--name', name, '--tag', tag]);
   }
-  buildImage(name: string, path: string) {
+  buildImage(name: string, path: string, tag: string) {
     spawn('docker', ['build', '-t', name, path]);
   }
   async deployService(name: string) {

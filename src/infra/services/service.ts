@@ -2,23 +2,23 @@ import { RepositoryManager } from './repository.manager';
 import { DockerManager } from './docker.manager';
 
 export const SERVICE_STATUS = {
-  SETUP: 'setup',
-  CLONING: 'cloning',
-  CLONED: 'cloned',
-  BUILDING: 'building',
-  BUILDED: 'builded',
-  DEPLOYING: 'deploying',
-  DEPLOYED: 'deployed',
-  STOPPED: 'stopped',
-  REMOVED: 'removed'
-}
+  SETUP: 0,
+  CLONING: 1,
+  CLONED: 2,
+  BUILDING: 3,
+  BUILT: 4,
+  DEPLOYING: 5,
+  DEPLOYED: 6,
+  ERROR: 7,
+  STOPED: 8,
+};
 
 
 export interface ServiceArgs {
   id: string;
   name: string;
   domain: string;
-  status: string;
+  status: number;
   health: string;
   server: string;
   build: {
@@ -34,7 +34,7 @@ export class Service {
   id: string;
   name: string;
   domain: string;
-  status: string;
+  status: number;
   health: string;
   server: string;
 
@@ -65,42 +65,30 @@ export class Service {
     this.repository = new RepositoryManager(repository);
   }
 
-  async setup() {
-    this.status = SERVICE_STATUS.CLONING;
-    console.log('STATUS:', this.status);
-    // insert in DB
-    // generate domain if required
-    // get server to insert
-    // clone repository inside the server
+  async clone() {
     if(!this.repository) {
       throw new Error('Repository not set');
     }
-    await this.repository.clone(this.buildPath);
-    // await this.repository.checkout(this.deploy.branch);
-    this.status = SERVICE_STATUS.CLONED
-    console.log('STATUS:', this.status);
-    this.build();
-    // console.log('STATUS:', this.status);
-    // if(this.deploy.auto) {
-    //   await this.autoDeploy();
-    //   console.log('STATUS:', this.status);
-    // }
-    
+    await this.repository.clone(this.buildPath, this.deploy.branch);
   }
 
-  build() {
-    this.status = SERVICE_STATUS.BUILDING;
-    console.log('STATUS:', this.status);
+  async build() {
+    const lastCommit = await this.getLastCommit();
+    const tag = this.name + ':' + lastCommit.substring(0, 7);
     const dockerManager = new DockerManager();
     if(this.buildMethod === 'nixpacks') {
-      dockerManager.buildNixpacks(this.name, this.buildPath);
-      console.log('BUILD METHOD', this.buildMethod);
+      await dockerManager.buildNixpacks(this.name, this.buildPath, tag);
     }else if (this.buildMethod === 'docker') {
-      dockerManager.buildImage(this.name, this.buildPath);
+      await dockerManager.buildImage(this.name, this.buildPath, tag);
     }
-    // this.status = SERVICE_STATUS.BUILDED;
+    
   }
-
+  getLastCommit() {
+    if(!this.repository) {
+      throw new Error('Repository not set');
+    }
+    return this.repository.getLastCommit();
+  }
   async autoDeploy() {
     this.status = SERVICE_STATUS.DEPLOYING;
     const dockerManager = new DockerManager();

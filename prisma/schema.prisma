@@ -14,32 +14,16 @@ datasource db {
 model Service {
   id        Int      @id @default(autoincrement())
   name      String
+  serviceId String   @unique
   repoUrl   String
   repoProvider String
   repoAuth  String
   domain    String
-  autoDeploy Boolean
-  branch    String
+  buildMethod String
+  buildPath String
+  autoDeploy Boolean @default(false)
+  branch    String   @default("main")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   status    Int      @default(0)
-}
-
-
-model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  published Boolean  @default(false)
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  Int?
-}
-
-model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-  posts Post[]
 }

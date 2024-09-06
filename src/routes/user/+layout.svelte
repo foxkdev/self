@@ -11,8 +11,8 @@
   <aside class="w-64 bg-[#090909] text-white flex flex-col">
       <!-- Logo and Name -->
       <div class="flex items-center justify-center h-20">
-          <img src="/path-to-your-logo.png" alt="Logo" class="h-12 w-12 mr-2">
-          <span class="text-xl font-bold">VercelClon</span>
+          <!-- <img src="#" alt="Logo" class="h-12 w-12 mr-2"> -->
+          <span class="text-xl font-bold">Self</span>
       </div>
 
       <!-- Navigation Links -->
