@@ -16,7 +16,7 @@ export class DockerManager {
   }
   async deployService(name: string) {
     // spawn('docker', ['run', '-it', name]);
-    await this.process.execute('docker', ['run', '-it', name]);
+    await this.process.execute('docker', ['run', name]);
   }
   stopService(name: string) {
     spawn('docker', ['stop', name]);

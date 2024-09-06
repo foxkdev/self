@@ -2,7 +2,7 @@ import { error, json } from '@sveltejs/kit';
 import prisma from '$infra/services/prisma';
 import type { RequestHandler } from './$types';
 import { ServiceRepository } from '$infra/db/repository/service.repository';
-import { Service, SERVICE_STATUS } from '$infra/services/service';
+import { BRANCH_STATUS, Service, SERVICE_STATUS } from '$infra/services/service';
 
 export const POST: RequestHandler = async ({ request }) => {
 	
@@ -13,10 +13,8 @@ export const POST: RequestHandler = async ({ request }) => {
     status: {
       in: [SERVICE_STATUS.SETUP, SERVICE_STATUS.CLONED, SERVICE_STATUS.BUILT]
     }
-  });
+  }, { branches: true });
   for(const service of services) {
-    // service.setup();
-    console.log('SERVICE', service)
     const srv = new Service({
       id: service.serviceId,
       name: service.name,
@@ -29,13 +27,15 @@ export const POST: RequestHandler = async ({ request }) => {
         path: service.buildPath
       },
       deploy: {
-        auto: service.autoDeploy,
-        branch: service.branch
+        auto: service.branches[0].autoDeploy,
+        branch: service.branches[0].name,
+        commit: service.branches[0].commitDeployed
       }
     })
     srv.setRepository({ url: service.repoUrl, path: service.buildPath, auth: service.repoAuth, provider: service.repoProvider });
 
     if(service.status === SERVICE_STATUS.SETUP) {
+      // CLONE
       await serviceRepository.update(service.serviceId, {
         status: SERVICE_STATUS.CLONING
       });
@@ -48,13 +48,43 @@ export const POST: RequestHandler = async ({ request }) => {
       await serviceRepository.update(service.serviceId, {
         status: SERVICE_STATUS.BUILDING
       });
-      srv.build().then(() => {
+      srv.build().then((tag) => {
         serviceRepository.update(service.serviceId, {
-          status: SERVICE_STATUS.BUILT
+          status: SERVICE_STATUS.BUILT,
+          branches: {
+            update: {
+              where: {
+                id: service.branches[0].id
+              },
+              data: {
+                commitDeployed: tag,
+              }
+            }
+          }
         });
       });
     } else if(service.status === SERVICE_STATUS.BUILT) {
+      // AUTO DEPLOY
+      if(srv.deploy.auto) {
+        await serviceRepository.update(service.serviceId, {
+          status: SERVICE_STATUS.DEPLOYING
+        });
+        srv.deployService(srv.deploy.commit); // WE CAN CHEK WHEN CLOSE TO ERROR?
 
+        serviceRepository.update(service.serviceId, {
+            status: SERVICE_STATUS.DEPLOYED,
+            branches: {
+              update: {
+                where: {
+                  id: service.branches[0].id
+                },
+                data: {
+                  status: BRANCH_STATUS.DEPLOYED
+                }
+              }
+            }
+          });
+      }
     }
   }
 

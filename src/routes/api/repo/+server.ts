@@ -1,7 +1,7 @@
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { DockerManager, RepositoryManager } from '$infra/services/service.manager';
-import { Service, SERVICE_STATUS } from '$infra/services/service';
+import { BRANCH_STATUS, Service, SERVICE_STATUS } from '$infra/services/service';
 import { ServiceRepository } from '$infra/db/repository/service.repository';
 
 const BUILD_BASE = './builds'; // /var/www -> asegurarse carpeta existe, crearla en setup de self.
@@ -25,8 +25,15 @@ export const POST: RequestHandler = async ({ request }) => {
     repoUrl: repository.url,
     repoProvider: repository.provider,
     repoAuth: repository.auth,
-    autoDeploy: deploy.auto,
-    branch: deploy.branch
+    branches: {
+      create: [
+        {
+          name: deploy.branch,
+          autoDeploy: deploy.auto,
+          status: BRANCH_STATUS.NO_DEPLOYED
+        }
+      ]
+    }
   });
 
 

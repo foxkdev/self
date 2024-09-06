@@ -21,8 +21,20 @@ model Service {
   domain    String
   buildMethod String
   buildPath String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  status    Int      @default(0)
+  branches  Branch[]
+}
+
+
+model Branch {
+  id        Int      @id @default(autoincrement())
+  name      String
   autoDeploy Boolean @default(false)
-  branch    String   @default("main")
+  commitDeployed String @default("")
+  serviceId Int
+  service   Service  @relation(fields: [serviceId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   status    Int      @default(0)

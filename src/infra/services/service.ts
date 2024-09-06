@@ -13,6 +13,11 @@ export const SERVICE_STATUS = {
   STOPED: 8,
 };
 
+export const BRANCH_STATUS = {
+  NO_DEPLOYED: 0,
+  DEPLOYED: 1,
+}
+
 
 export interface ServiceArgs {
   id: string;
@@ -28,6 +33,7 @@ export interface ServiceArgs {
   deploy: {
     auto: boolean;
     branch: string;
+    commit: string;
   }
 }
 export class Service {
@@ -43,6 +49,7 @@ export class Service {
   deploy: {
     auto: boolean;
     branch: string;
+    commit: string;
   };
 
   repository: RepositoryManager | null = null;
@@ -57,7 +64,8 @@ export class Service {
     this.buildPath = build.path;
     this.deploy = {
       auto: deploy.auto,
-      branch: deploy.branch
+      branch: deploy.branch,
+      commit: deploy.commit
     }
 
   }
@@ -81,7 +89,7 @@ export class Service {
     }else if (this.buildMethod === 'docker') {
       await dockerManager.buildImage(this.name, this.buildPath, tag);
     }
-    
+    return tag;
   }
   getLastCommit() {
     if(!this.repository) {
@@ -89,10 +97,8 @@ export class Service {
     }
     return this.repository.getLastCommit();
   }
-  async autoDeploy() {
-    this.status = SERVICE_STATUS.DEPLOYING;
+  async deployService(tag) {
     const dockerManager = new DockerManager();
-    await dockerManager.deployService(this.name);
-    this.status = SERVICE_STATUS.DEPLOYED;
+    await dockerManager.deployService(tag);
   }
 }
