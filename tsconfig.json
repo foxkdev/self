@@ -12,6 +12,7 @@
 		"moduleResolution": "bundler",
 		"baseUrl": ".",
 		"paths": {
+			"$jobs/*": ["src/jobs/*"],
 			"$lib/*": ["src/lib/*"],
 			"$infra/*": ["src/infra/*"],
 			"$components/*": ["src/components/*"],
